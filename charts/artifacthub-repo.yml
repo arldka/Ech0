@@ -1,0 +1,8 @@
+# Artifact Hub repository metadata. The release workflow publishes this file to
+# the root of the gh-pages branch (next to index.yaml), which is the Helm repo URL.
+# After registering the repository on https://artifacthub.io, paste the generated
+# repository ID below to get the "Verified publisher" badge.
+repositoryID: ""
+owners:
+  - name: lin-snow
+    # email: l1nsn0w@qq.com (email of the account that will be the owner of the repository on artifacthub.io)

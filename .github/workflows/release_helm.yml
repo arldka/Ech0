@@ -59,6 +59,7 @@ jobs:
 
           sed -i -E 's|^version: .*|version: '"${app_version}"'|' charts/ech0/Chart.yaml
           sed -i -E 's/^appVersion: .*/appVersion: "'"${app_version}"'"/' charts/ech0/Chart.yaml
+          sed -i -E 's|^(      image: sn0wl1n/ech0:).*|\1'"${app_version}"'|' charts/ech0/Chart.yaml
           echo "Synced chart version and appVersion to ${app_version} from tag ${release_tag}"
 
       - name: Validate chart version metadata
@@ -70,6 +71,12 @@ jobs:
             exit 1
           fi
           echo "Chart package will be ech0-${chart_version}.tgz"
+
+      - name: Lint chart
+        run: |
+          set -euo pipefail
+          helm lint charts/ech0
+          helm template ech0 charts/ech0 >/dev/null
 
       - name: Configure Git
         run: |
@@ -211,10 +218,12 @@ jobs:
           cp _site/logo.svg "$tmpdir/logo.svg"
           cp _site/favicon.svg "$tmpdir/favicon.svg"
           cp _site/.nojekyll "$tmpdir/.nojekyll"
+          # Artifact Hub repository metadata (ownership / verified publisher)
+          cp charts/artifacthub-repo.yml "$tmpdir/artifacthub-repo.yml"
 
           (
             cd "$tmpdir"
-            git add index.html logo.svg favicon.svg .nojekyll
+            git add index.html logo.svg favicon.svg .nojekyll artifacthub-repo.yml
             if git diff --cached --quiet; then
               echo "Release page unchanged; skip commit."
               exit 0
@@ -230,6 +239,8 @@ jobs:
             echo ""
             echo "- [ ] Verify release page is available at \`https://lin-snow.github.io/Ech0/\`"
             echo "- [ ] Verify gh-pages branch contains \`.nojekyll\` and \`index.yaml\`"
+            echo "- [ ] Verify \`https://lin-snow.github.io/Ech0/artifacthub-repo.yml\` is served"
+            echo "- [ ] Verify the package appears at \`https://artifacthub.io/packages/helm/ech0/ech0\` (Artifact Hub rescans roughly every 30 min)"
             echo "- [ ] Verify release has chart package \`ech0-<version>.tgz\`"
             echo "- [ ] Verify install works:"
             echo "  \`\`\`bash"
